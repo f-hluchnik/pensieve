@@ -6,4 +6,8 @@ from dotenv import load_dotenv
 load_dotenv()
 
 client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
-client.chat_postMessage(channel="#"+"thoughts", text="Hello world!")
+# read last message in "thoughts" channel
+result = client.conversations_history(channel=os.getenv("THOUGHTS_CHANNEL_ID"), inclusive=True)
+message_text = result["messages"][0]["text"]
+# send message to the "reminders" channel
+client.chat_postMessage(channel=os.getenv("REMINDERS_CHANNEL_ID"), text=message_text)
