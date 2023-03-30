@@ -20,6 +20,15 @@ def getThoughts(count=1):
     response = db.read(count)
     return list(response)
 
+@app.route('/getrandomthought', methods=['GET'])
+def getRandomThought():
+    """
+    getThoughts ... Function returns a random thought from the database.
+    """
+    db = MongoCRUD()
+    response = db.read_random()
+    return list(response)
+
 @app.route('/addthought', methods=['POST'])
 def addThought(thought):
     """

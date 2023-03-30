@@ -25,6 +25,14 @@ class MongoCRUD:
         documents = self.collection.find(limit=count).sort('time', -1)
         output = [{item: data[item] for item in data if item != '_id'} for data in documents]
         return output
+    
+    def read_random(self):
+        """
+        read_random ... Function returns one random row from DB.
+        """
+        documents = self.collection.aggregate([{'$sample': {'size': 1 }}])
+        output = [{item: data[item] for item in data if item != '_id'} for data in documents]
+        return output
 
     def write(self, newDocument):
         """
