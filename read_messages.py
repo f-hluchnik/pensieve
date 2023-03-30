@@ -42,7 +42,7 @@ def format_thought(message):
         timestamp = get_timestamp(match.group("datetime")) or message["ts"]
         text = re.sub(pattern, '', text)
 
-    thought = {'text': text.rstrip(), 'timestamp': str(timestamp)}
+    thought = {'text': text.rstrip(), 'timestamp': timestamp}
     return thought
 
 def get_timestamp(date_string):
@@ -51,6 +51,7 @@ def get_timestamp(date_string):
     date and time formats. If no format fits, it returns 0.
     """
     date_formats = ["%d. %m. %Y %H:%M", "%d. %m. %Y", "%d.%m.%Y %H:%M", "%d.%m.%Y", "%H:%M"]
+    dt = None
     for format_code in date_formats:
         try:
             if format_code == "%H:%M":
@@ -66,7 +67,7 @@ def get_timestamp(date_string):
         timestamp = dt.timestamp()
     else:
         timestamp = 0
-    return timestamp
+    return str(timestamp)
 
 if __name__ == "__main__":
     messages = read_messages()
