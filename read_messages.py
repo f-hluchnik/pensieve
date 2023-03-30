@@ -35,12 +35,14 @@ def format_thought(message):
     date and time is provided, it uses the timestamp from Slack.
     """
     timestamp = message["ts"]
+    text = message["text"]
     pattern = r"\(\#datetime\s(?P<datetime>[\d.\s:]+)\)"
-    match = re.search(pattern, message["text"])
+    match = re.search(pattern, text)
     if match:
         timestamp = get_timestamp(match.group("datetime")) or message["ts"]
+        text = re.sub(pattern, '', text)
 
-    thought = {'text': message["text"], 'timestamp': str(timestamp)}
+    thought = {'text': text.rstrip(), 'timestamp': str(timestamp)}
     return thought
 
 def get_timestamp(date_string):
