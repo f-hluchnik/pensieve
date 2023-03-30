@@ -1,4 +1,4 @@
-from read_message import read_message
+from read_messages import read_messages
 from send_message import send_message
-read_message()
+read_messages()
 send_message()

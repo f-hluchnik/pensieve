@@ -19,10 +19,10 @@ class MongoCRUD:
 
     def read(self, count=1):
         """
-        read ... Function reads data from the database. It reads them descending by time.
+        read ... Function reads data from the database. It reads them descending by timestamp.
         The default amount is 1 row, it is possible to change it by providing an integer parameter.
         """
-        documents = self.collection.find(limit=count).sort('time', -1)
+        documents = self.collection.find(limit=count).sort('timestamp', -1)
         output = [{item: data[item] for item in data if item != '_id'} for data in documents]
         return output
     
@@ -38,11 +38,18 @@ class MongoCRUD:
         """
         write ... Function inserts one row in the database. It expects JSON object as input.
         """
-        print('Writing Data')
-        print(newDocument)
         response = self.collection.insert_one(newDocument)
         output = {'Status': 'Successfully Inserted',
                   'Document_ID': str(response.inserted_id)}
+        return output
+    
+    def write_many(self, newDocuments):
+        """
+        write ... Function inserts multiple rows in the database. It expects JSON object as input.
+        """
+        response = self.collection.insert_many(newDocuments)
+        output = {'Status': 'Successfully Inserted',
+                  'Document_ID': str(response.inserted_ids)}
         return output
 
     def update(self, objectId, updatedQuestion):
