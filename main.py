@@ -7,7 +7,7 @@ def do_it_all():
     """
     messages = read_messages()
     save_thoughts(messages)
-    message = prepare_mesage
+    message = prepare_mesage()
     send_message(message)
 
 if __name__ == "__main__":

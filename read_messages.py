@@ -22,7 +22,7 @@ def save_thoughts(messages):
     """
     thoughts = list()
     for message in messages:
-        if message["type"] == "message":
+        if "subtype" not in message or message["subtype"] != "channel_join":
             thought = {'text': message["text"], 'timestamp': message["ts"]}
             thoughts = [thought] + thoughts
     if len(thoughts) > 0:
