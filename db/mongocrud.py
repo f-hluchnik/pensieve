@@ -22,7 +22,7 @@ class MongoCRUD:
         read ... Function reads data from the database. It returns them descending by timestamp.
         The default amount is 1 row, it is possible to change it by providing an integer parameter.
         """
-        documents = self.collection.find(limit=count).sort('timestamp', -1)
+        documents = self.collection.find(limit=count).sort('timestamp_real', -1)
         output = [{item: data[item] for item in data if item != '_id'} for data in documents]
         return output
     

@@ -35,12 +35,12 @@ def getRandomThought():
 @app.route('/getlasttimestamp', methods=['GET'])
 def getLastTimestamp():
     """
-    getLastTimestamp ... Function returns timestamp of the last item inserted in the database.
+    getLastTimestamp ... Function returns the real timestamp of the last item inserted in the database.
     """
     db = MongoCRUD()
     response = db.read(1)
     if len(response) >= 1:
-        return response[0]["timestamp"]
+        return response[0]["timestamp_real"]
     else:
         return 0
 
@@ -48,7 +48,7 @@ def getLastTimestamp():
 def addThought(thought):
     """
     addThought ... Function adds one thought in the database. As input it expects a dictionary
-    containing keys "thought" and "timestamp".
+    containing keys "thought", "timestamp_print" and "timestamp_real".
     """
     db = MongoCRUD()
     response = db.write(thought)
@@ -60,7 +60,7 @@ def addThought(thought):
 def addThoughts(thoughts):
     """
     addThoughts ... Function adds thoughts in the database. As input it expects a list of dictionaries
-    containing keys "thought" and "timestamp".
+    containing keys "thought", "timestamp_print" and "timestamp_real".
     """
     db = MongoCRUD()
     response = db.write_many(thoughts)

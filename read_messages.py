@@ -42,7 +42,7 @@ def format_thought(message):
         timestamp = get_timestamp(match.group("datetime")) or message["ts"]
         text = re.sub(pattern, '', text)
 
-    thought = {'text': text.rstrip(), 'timestamp': timestamp}
+    thought = {'text': text.rstrip(), 'timestamp_print': timestamp, 'timestamp_real': message['ts']}
     return thought
 
 def get_timestamp(date_string):

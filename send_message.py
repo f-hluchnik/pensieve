@@ -12,7 +12,7 @@ def prepare_mesage():
     """
     random_thought = getRandomThought()
     thought = random_thought["text"]
-    time = datetime.datetime.fromtimestamp(float(random_thought["timestamp"])).strftime("%a, %d. %m. %Y, %H:%M")
+    time = datetime.datetime.fromtimestamp(float(random_thought["timestamp_print"])).strftime("%a, %d. %m. %Y, %H:%M")
     message = thought + "\n(" + time + ")"
     return message
 
