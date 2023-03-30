@@ -1,16 +1,28 @@
 import os
 from slack_sdk import WebClient
 from dotenv import load_dotenv
-from db.mongorest import getThoughts, getRandomThought
+from db.mongorest import getRandomThought
+import datetime
 
 load_dotenv()
 
-def send_message():
+def prepare_mesage():
+    """
+    prepare_message ... Function retrieves random thought from thoughts database and formats it.
+    """
+    random_thought = getRandomThought()
+    thought = random_thought["text"]
+    time = datetime.datetime.fromtimestamp(float(random_thought["timestamp"])).strftime("%a, %d. %m. %Y, %H:%M")
+    message = thought + "\n(" + time + ")"
+    return message
+
+def send_message(message):
+    """
+    send_message ... Function sends message in the specified Slack channel.
+    """
     client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
-    # thoughts = getThoughts(1)
-    thoughts = getRandomThought()
-    # send message to the "reminders" channel
-    client.chat_postMessage(channel=os.getenv("REMINDERS_CHANNEL_ID"), text=thoughts[0]["text"])
+    client.chat_postMessage(channel=os.getenv("REMINDERS_CHANNEL_ID"), text=message)
 
 if __name__ == "__main__":
-    send_message()
+    message = prepare_mesage()
+    send_message(message)

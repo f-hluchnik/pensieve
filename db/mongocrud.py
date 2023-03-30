@@ -19,7 +19,7 @@ class MongoCRUD:
 
     def read(self, count=1):
         """
-        read ... Function reads data from the database. It reads them descending by timestamp.
+        read ... Function reads data from the database. It returns them descending by timestamp.
         The default amount is 1 row, it is possible to change it by providing an integer parameter.
         """
         documents = self.collection.find(limit=count).sort('timestamp', -1)
@@ -52,13 +52,13 @@ class MongoCRUD:
                   'Document_ID': str(response.inserted_ids)}
         return output
 
-    def update(self, objectId, updatedQuestion):
+    def update(self, objectId, updatedDocument):
         """
         update ... Function updates existing document based on ObjectId. It expects objectId as
-        a string and newQuestion as a dictionary as arguments.
+        a string and updatedDocument as a dictionary as arguments.
         """
         filter = {"_id": ObjectId(objectId)}
-        updatedValue = {"$set": updatedQuestion}
+        updatedValue = {"$set": updatedDocument}
         response = self.collection.update_one(filter, updatedValue)
         output = {'Status': 'Successfully Updated' if response.modified_count > 0 else "Nothing was updated."}
         return output

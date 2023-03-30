@@ -12,9 +12,9 @@ def base():
 @app.route('/getthoughts', methods=['GET'])
 def getThoughts(count=1):
     """
-    getThoughts ... Function returns n thoughts from the database. If no argument is given,
-    function returns the standart set of 1 thought. You can provide an integer argument to
-    specify how many thoughts you want.
+    getThoughts ... Function returns n thoughts from the database (from the latest inserted).
+    If no argument is given, function returns the standart set of 1 thought. You can provide
+    an integer argument to specify how many thoughts you want.
     """
     db = MongoCRUD()
     response = db.read(count)
@@ -23,16 +23,19 @@ def getThoughts(count=1):
 @app.route('/getrandomthought', methods=['GET'])
 def getRandomThought():
     """
-    getThoughts ... Function returns a random thought from the database.
+    getRandomThought ... Function returns a random thought from the database.
     """
     db = MongoCRUD()
     response = db.read_random()
-    return list(response)
+    if len(response) > 0:
+        return response[0]
+    else:
+        return {"", "0"}
 
 @app.route('/getlasttimestamp', methods=['GET'])
 def getLastTimestamp():
     """
-    getThoughts ... Function returns a random thought from the database.
+    getLastTimestamp ... Function returns timestamp of the last item inserted in the database.
     """
     db = MongoCRUD()
     response = db.read(1)
@@ -56,7 +59,7 @@ def addThought(thought):
 @app.route('/addthoughts', methods=['POST'])
 def addThoughts(thoughts):
     """
-    addThought ... Function adds one thought in the database. As input it expects a list of dictionaries
+    addThoughts ... Function adds thoughts in the database. As input it expects a list of dictionaries
     containing keys "thought" and "timestamp".
     """
     db = MongoCRUD()
@@ -83,42 +86,6 @@ def deleteThought(objectId):
     """
     db = MongoCRUD()
     response = db.delete(objectId)
-    return Response(response=json.dumps(response),
-                    status=200,
-                    mimetype='application/json')
-
-# TODO: This function is just copied from the tutorial. Please update it before usage.
-@app.route('/mongodb', methods=['GET'])
-def mongo_read():
-    obj1 = MongoCRUD()
-    response = obj1.read()
-    return Response(response=json.dumps(response),
-                    status=200,
-                    mimetype='application/json')
-
-# TODO: This function is just copied from the tutorial. Please update it before usage.
-@app.route('/mongodb', methods=['POST'])
-def mongo_write():
-    obj1 = MongoCRUD()
-    response = obj1.write("")
-    return Response(response=json.dumps(response),
-                    status=200,
-                    mimetype='application/json')
-
-# TODO: This function is just copied from the tutorial. Please update it before usage.
-@app.route('/mongodb', methods=['PUT'])
-def mongo_update():
-    obj1 = MongoCRUD()
-    response = obj1.update('6410e29e7be95a9d841d591c')
-    return Response(response=json.dumps(response),
-                    status=200,
-                    mimetype='application/json')
-
-# TODO: This function is just copied from the tutorial. Please update it before usage.
-@app.route('/mongodb', methods=['DELETE'])
-def mongo_delete():
-    obj1 = MongoCRUD()
-    response = obj1.delete("")
     return Response(response=json.dumps(response),
                     status=200,
                     mimetype='application/json')
