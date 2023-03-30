@@ -17,12 +17,12 @@ class MongoCRUD:
             cursor = self.client[os.getenv('DB_NAME')]
             self.collection = cursor[os.getenv('COLLECTION_NAME')]
 
-    def read(self, count=29):
+    def read(self, count=1):
         """
-        read ... Function reads data from the database. The default amount is 29 rows,
-        it is possible to change it by providing an integer parameter.
+        read ... Function reads data from the database. It reads them descending by time.
+        The default amount is 1 row, it is possible to change it by providing an integer parameter.
         """
-        documents = self.collection.find(limit=count)
+        documents = self.collection.find(limit=count).sort('time', -1)
         output = [{item: data[item] for item in data if item != '_id'} for data in documents]
         return output
 
