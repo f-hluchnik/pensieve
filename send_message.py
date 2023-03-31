@@ -1,7 +1,7 @@
 import os
 from slack_sdk import WebClient
 from dotenv import load_dotenv
-from db.mongorest import getRandomThought, getThoughts
+from db.mongorest import getRandomThought
 import datetime
 
 load_dotenv()
@@ -11,7 +11,6 @@ def prepare_mesage():
     prepare_message ... Function retrieves random thought from thoughts database and formats it.
     """
     random_thought = getRandomThought()
-    random_thought = getThoughts(1)
     thought = random_thought["text"]
     time = datetime.datetime.fromtimestamp(float(random_thought["timestamp_print"])).strftime("%a, %d. %m. %Y, %H:%M")
     message = thought + "\n(" + time + ")"
