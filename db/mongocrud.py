@@ -17,12 +17,12 @@ class MongoCRUD:
             cursor = self.client[os.getenv('DB_NAME')]
             self.collection = cursor[os.getenv('COLLECTION_NAME')]
 
-    def read(self, count=1):
+    def read(self, query={}, sort_query=[('timestamp_real', -1)], limit=0):
         """
-        read ... Function reads data from the database. It returns them descending by timestamp.
-        The default amount is 1 row, it is possible to change it by providing an integer parameter.
+        read ... Function reads data from the database based on provided query,
+        sort_query and limit. Default sort_query is descending based on timestamp_real field.
         """
-        documents = self.collection.find(limit=count).sort('timestamp_real', -1)
+        documents = self.collection.find(query).sort(sort_query).limit(limit)
         output = [{item: data[item] for item in data if item != '_id'} for data in documents]
         return output
     
@@ -33,6 +33,12 @@ class MongoCRUD:
         documents = self.collection.aggregate([{'$sample': {'size': 1 }}])
         output = [{item: data[item] for item in data if item != '_id'} for data in documents]
         return output
+    
+    def read_tags(self, tags = []):
+        """
+        read_tags ... Function returns all documents with specified tags.
+        """
+        documents = self.collection.find({'hashtags': {'$all': ['#beh']}})
 
     def write(self, newDocument):
         """
