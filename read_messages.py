@@ -34,21 +34,39 @@ def format_thought(message):
     is a date and time included in the message, it tries to parse it and use it as timestamp. If no
     date and time is provided, it uses the timestamp from Slack.
     """
-    timestamp = message["ts"]
     text = message["text"]
-    pattern = r"\(\#datetime\s(?P<datetime>[\d.\s:]+)\)"
-    match = re.search(pattern, text)
-    if match:
-        timestamp = get_timestamp(match.group("datetime")) or message["ts"]
-        text = re.sub(pattern, '', text)
-
-    thought = {'text': text.rstrip(), 'timestamp_print': timestamp, 'timestamp_real': message['ts']}
+    timestamp, text = parse_time(text)
+    if timestamp is None:
+        timestamp = message["ts"]
+    hashtags, text = parse_hashtags(text)
+    text = text.rstrip()
+    thought = {'text': text, 'timestamp_print': timestamp, 'timestamp_real': message['ts'], 'hashtags': hashtags}
     return thought
 
-def get_timestamp(date_string):
+def parse_hashtags(message):
     """
-    get_timestamp ... Function tries to parse date and time from the message. It tries several
-    date and time formats. If no format fits, it returns 0.
+    parse_hashtags ... Function parses hashtags from message text.
+    """
+    pattern = r'#\w+'
+    hashtags = re.findall(pattern, message)
+    message = re.sub(pattern, '', message)
+    return hashtags, message
+
+def parse_time(message: str):
+    """
+    parse_time ... Function parses time from message text.
+    """
+    pattern = r"\(@\s(?P<datetime>[\d.\s:]+)\)"
+    match = re.search(pattern, message)
+    timestamp = None
+    if match:
+        timestamp = create_timestamp(match.group("datetime"))
+        message = re.sub(pattern, '', message)
+    return timestamp, message
+
+def create_timestamp(date_string: str):
+    """
+    get_timestamp ... Function creates timestamp from provided date. If no format fits, it returns None.
     """
     date_formats = ["%d. %m. %Y %H:%M", "%d. %m. %Y", "%d.%m.%Y %H:%M", "%d.%m.%Y", "%H:%M"]
     dt = None
@@ -63,11 +81,8 @@ def get_timestamp(date_string):
             break
         except ValueError:
             pass
-    if dt is not None:
-        timestamp = dt.timestamp()
-    else:
-        timestamp = 0
-    return str(timestamp)
+    timestamp = str(dt.timestamp()) if dt is not None else None
+    return timestamp
 
 if __name__ == "__main__":
     messages = read_messages()
