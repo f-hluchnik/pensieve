@@ -1,11 +1,10 @@
 from src.SlackClient import SlackClient
 
-client = SlackClient()
+slack_client = SlackClient()
 
 def read_process():
-    messages = client.read_messages()
-    client.save_thoughts(messages)
+    messages = slack_client.read_messages()
+    slack_client.save_thoughts(messages)
 
 if __name__ == "__main__":
-    messages = client.read_messages()
-    client.save_thoughts(messages)
+    read_process()

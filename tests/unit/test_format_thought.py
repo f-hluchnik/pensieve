@@ -1,7 +1,9 @@
-import unittest, datetime
-from read_messages import format_thought
+import unittest
+from src.SlackClient import SlackClient
 
 class TestFormatThought(unittest.TestCase):
+    def setUp(self):
+        self.client = SlackClient()
     
     def test_format_thought(self):
         test_messages = [
@@ -19,7 +21,7 @@ class TestFormatThought(unittest.TestCase):
             },
         ]
         for test_message in test_messages:
-            thought = format_thought(test_message["message"])
+            thought = self.client.format_thought(test_message["message"])
             self.assertEqual(thought, test_message["expected_thought"])
 
 if __name__ == '__main__':

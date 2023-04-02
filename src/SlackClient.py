@@ -2,12 +2,12 @@ import os, re, datetime, requests
 from slack_sdk import WebClient
 from dotenv import load_dotenv
 from db.mongorest import addThoughts, getLastTimestamp, getRandomThought
-from src.dropbox_client import upload_file
+from src.DropboxClient import DropboxClient
 
 class SlackClient():
     def __init__(self):
         load_dotenv()
-        self.client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
+        self.slack_client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
         self.tmp_dir = "tmp"
 
     def read_messages(self):
@@ -16,7 +16,7 @@ class SlackClient():
         and reads messages from specified Slack channel that are new since that timestamp.
         """
         last_timestamp = getLastTimestamp()
-        result = self.client.conversations_history(channel=os.getenv("THOUGHTS_CHANNEL_ID"),  oldest=last_timestamp)
+        result = self.slack_client.conversations_history(channel=os.getenv("THOUGHTS_CHANNEL_ID"),  oldest=last_timestamp)
         return result["messages"]
     
     def save_thoughts(self, messages):
@@ -26,9 +26,10 @@ class SlackClient():
         """
         thoughts = list()
         for message in messages:
-            if "subtype" not in message or message["subtype"] != "channel_join":
-                thought = self.format_thought(message)
-                thoughts = [thought] + thoughts
+            if "subtype" in message and message["subtype"] == "channel_join":
+                continue
+            thought = self.format_thought(message)
+            thoughts = [thought] + thoughts
         if len(thoughts) > 0:
             addThoughts(thoughts)
     
@@ -43,51 +44,11 @@ class SlackClient():
         if timestamp is None:
             timestamp = message["ts"]
         hashtags, text = self.parse_hashtags(text)
-        files_urls = self.parse_attachments(message)
-        text = text + ' ' + ' '.join(files_urls)
         text = text.rstrip()
+        attachments_urls = self.parse_attachments(message)
+        text = text + "\n" + attachments_urls
         thought = {'text': text, 'timestamp_print': timestamp, 'timestamp_real': message['ts'], 'hashtags': hashtags}
-        return thought
-    
-    def parse_attachments(self, message):
-        """
-        parse_attachments ... Function parses attachments from message, uploads them to Dropbox and
-        returns their Dropbox urls.
-        """
-        if "files" not in message:
-            return ""
-        urls = list()
-        for file in message["files"]:
-            file_id = file["id"]
-            file_url = file['url_private_download']
-            downloaded_file = self.download_attachment(file_id, file_url)
-            url = upload_file(downloaded_file)
-            urls.append(url)
-            self.delete_tmp_file(downloaded_file)
-        return urls
-
-    def download_attachment(self, file_id, url_private_download):
-        file_info = self.client.files_info(file=file_id)
-        headers = {"Authorization": f"Bearer {os.environ['SLACK_BOT_TOKEN']}"}
-        file_data = requests.get(url_private_download, headers=headers)
-        file_path = os.path.join(self.tmp_dir, file_info["file"]["name"])
-        with open(file_path, "wb") as f:
-            f.write(file_data.content)
-
-        return file_path
-
-    def delete_tmp_file(self, file_path):
-        os.remove(file_path)
-        
-
-    def parse_hashtags(self, message):
-        """
-        parse_hashtags ... Function parses hashtags from message text.
-        """
-        pattern = r'#\w+'
-        hashtags = re.findall(pattern, message)
-        message = re.sub(pattern, '', message)
-        return hashtags, message
+        return thought    
 
     def parse_time(self, message: str):
         """
@@ -119,7 +80,54 @@ class SlackClient():
             except ValueError:
                 pass
         timestamp = str(dt.timestamp()) if dt is not None else None
-        return timestamp
+        return timestamp    
+
+    def parse_hashtags(self, message: str):
+        """
+        parse_hashtags ... Function parses hashtags from message text.
+        """
+        pattern = r'#\w+'
+        hashtags = re.findall(pattern, message)
+        message = re.sub(pattern, '', message)
+        return hashtags, message
+    
+    def parse_attachments(self, message):
+        """
+        parse_attachments ... Function parses attachments from message, uploads them to Dropbox and
+        returns their Dropbox urls.
+        """
+        if "files" not in message:
+            return ""
+        urls = list()
+        dropbox_client = DropboxClient()
+        for file in message["files"]:
+            file_id = file["id"]
+            file_url = file['url_private_download']
+            downloaded_file = self.download_attachment(file_id, file_url)
+            url = dropbox_client.upload_file(downloaded_file)
+            urls.append(url)
+            self.delete_tmp_file(downloaded_file)
+        urls_prepared = "\n".join(urls)
+        return urls_prepared.strip()
+
+    def download_attachment(self, file_id, url_private_download):
+        """
+        download_attachment ... Function downloads attachment from Slack, saves it in tmp directory
+        and returns path to the saved file.
+        """
+        file_info = self.slack_client.files_info(file=file_id)
+        headers = {"Authorization": f"Bearer {os.environ['SLACK_BOT_TOKEN']}"}
+        file_data = requests.get(url_private_download, headers=headers)
+        file_path = os.path.join(self.tmp_dir, file_info["file"]["name"])
+        with open(file_path, "wb") as f:
+            f.write(file_data.content)
+        return file_path
+
+    def delete_tmp_file(self, file_path):
+        """
+        delete_tmp_file ... Function deletes temporary file acording to provided path.
+        """
+        os.remove(file_path)
     
     def prepare_mesage(self):
         """
@@ -140,5 +148,4 @@ class SlackClient():
         """
         send_message ... Function sends message in the specified Slack channel.
         """
-        # client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
-        self.client.chat_postMessage(channel=os.getenv("REMINDERS_CHANNEL_ID"), text=message)
+        self.slack_client.chat_postMessage(channel=os.getenv("REMINDERS_CHANNEL_ID"), text=message)
