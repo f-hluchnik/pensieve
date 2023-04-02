@@ -46,7 +46,8 @@ class SlackClient():
         hashtags, text = self.parse_hashtags(text)
         text = text.rstrip()
         attachments_urls = self.parse_attachments(message)
-        text = text + "\n" + attachments_urls
+        if attachments_urls != "":
+            text = text + "\n" + attachments_urls
         thought = {'text': text, 'timestamp_print': timestamp, 'timestamp_real': message['ts'], 'hashtags': hashtags}
         return thought    
 
