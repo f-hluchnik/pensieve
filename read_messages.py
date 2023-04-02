@@ -1,16 +1,19 @@
-import os, re, datetime
+import os, re, datetime, requests
 from slack_sdk import WebClient
 from dotenv import load_dotenv
 from db.mongorest import addThoughts, getLastTimestamp
+from src.dropbox_client import upload_file
 
 load_dotenv()
+client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
+tmp_dir = "tmp"
 
 def read_messages():
     """
     read_messages ... Function checks for the latest timestamp stored in thoughts DB
     and reads messages from specified Slack channel that are new since that timestamp.
     """
-    client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
+    # client = WebClient(token=os.getenv("SLACK_BOT_TOKEN"))
     last_timestamp = getLastTimestamp()
     result = client.conversations_history(channel=os.getenv("THOUGHTS_CHANNEL_ID"),  oldest=last_timestamp)
     return result["messages"]
@@ -39,9 +42,42 @@ def format_thought(message):
     if timestamp is None:
         timestamp = message["ts"]
     hashtags, text = parse_hashtags(text)
+    files_urls = parse_attachments(message)
+    text = text + ' ' + ' '.join(files_urls)
     text = text.rstrip()
     thought = {'text': text, 'timestamp_print': timestamp, 'timestamp_real': message['ts'], 'hashtags': hashtags}
     return thought
+
+def parse_attachments(message):
+    """
+    parse_attachments ... Function parses attachments from message, uploads them to Dropbox and
+    returns their Dropbox urls.
+    """
+    if "files" not in message:
+        return ""
+    urls = list()
+    for file in message["files"]:
+        file_id = file["id"]
+        file_url = file['url_private_download']
+        downloaded_file = download_attachment(file_id, file_url)
+        url = upload_file(downloaded_file)
+        urls.append(url)
+        delete_tmp_file(downloaded_file)
+    return urls
+
+def download_attachment(file_id, url_private_download):
+    file_info = client.files_info(file=file_id)
+    headers = {"Authorization": f"Bearer {os.environ['SLACK_BOT_TOKEN']}"}
+    file_data = requests.get(url_private_download, headers=headers)
+    file_path = os.path.join(tmp_dir, file_info["file"]["name"])
+    with open(file_path, "wb") as f:
+        f.write(file_data.content)
+
+    return file_path
+
+def delete_tmp_file(file_path):
+    os.remove(file_path)
+    
 
 def parse_hashtags(message):
     """
