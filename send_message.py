@@ -1,11 +1,10 @@
 from src.SlackClient import SlackClient
 
-client = SlackClient()
+slack_client = SlackClient()
 
 def send_process():
-    message = client.prepare_mesage()
-    client.send_message(message)
+    message = slack_client.prepare_mesage()
+    slack_client.send_message(message)
 
 if __name__ == "__main__":
-    message = client.prepare_mesage()
-    client.send_message(message)
+    send_process()

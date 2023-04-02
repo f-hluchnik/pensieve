@@ -1,5 +1,6 @@
 from read_messages import read_process
 from send_message import send_process
+
 def do_it_all():
     """
     do_it_all ... Function runs all parts of the script at once.
