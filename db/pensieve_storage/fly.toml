@@ -1,0 +1,32 @@
+# See https://fly.io/docs/reference/configuration/ for information about how to use this file.
+
+app = 'pensieve-storage'
+primary_region = 'ams'
+
+[build]
+  image = 'mongo:latest'
+
+[env]
+  MONGO_INITDB_ROOT_PASSWORD = '${MONGO_INITDB_ROOT_PASSWORD}'
+  MONGO_INITDB_ROOT_USERNAME = '${MONGO_INITDB_ROOT_USERNAME}'
+
+[[mounts]]
+  source = 'pensieve_data'
+  destination = '/data/db'
+
+[[services]]
+  protocol = 'tcp'
+  internal_port = 27017
+
+  [[services.ports]]
+    port = 27017
+
+  [services.concurrency]
+    type = 'requests'
+    hard_limit = 25
+    soft_limit = 20
+
+[[vm]]
+  memory = '1gb'
+  cpu_kind = 'shared'
+  cpus = 1

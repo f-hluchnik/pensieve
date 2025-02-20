@@ -1,19 +1,10 @@
 # Pensieve
 
-The idea of the Pensieve comes from an object owned by Dumbledore in the Harry Potter books. This object, called a pensieve, was used to store memories.
-Thoughts can be stored in, for example, an ordinary note-taking application. But I've always thought I'd need to be reminded of them occasionally. That's how the idea for this project came about. Using Slack seemed to be the most feasible way to go, as it is very easy to integrate a bot into Slack.
+The inspiration for Pensieve comes from the magical object owned by Dumbledore in Harry Potter—a basin used to store and revisit memories. While traditional note-taking apps allow thoughts to be saved, I always felt the need for occasional reminders.
 
-# Usage
+That's where this project began. Slack provided the perfect platform, offering seamless bot integration to make revisiting important thoughts effortless.
 
-As for now, the project doesn't do much. It just reads the last message from the "thoughts" channel and sends it in the "reminders" channel. In the future, there will be a database for storing your thoughts and some logic which will remind you of random thoughts at random times.
 
-1. Clone this project.
-2. Create a one person Slack team.
-3. In this team, add two channels - thoughts and reminders.
-4. Create an Slack app and install it in this team.
-5. Create a `.env` file in the working directory.
-6. Add following variables:
-  - SLACK_BOT_TOKEN, which is your personal Slack app token
-  - THOUGHTS_CHANNEL_ID, which is your thoughts channel id
-  - REMINDERS_CHANNEL_ID, which is your reminders channel id
-7. Run this script as `python main.py`.
+## Setup
+
+The detailed description of how to set up and use this project is available on the [Medium](https://medium.com/@f-hluchnik/building-your-own-pensieve-with-slack-dropbox-mongodb-and-python-874adbd41e5d) platform.
